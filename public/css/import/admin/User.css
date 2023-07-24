@@ -1,0 +1,17 @@
+.wp-title {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.wp-title a {
+    text-transform: none;
+    cursor: pointer;
+}
+
+.active-bottom {
+    text-shadow: 0 0 1px #007bff;
+    text-decoration: underline;
+}
+
+
