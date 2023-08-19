@@ -18,6 +18,8 @@ use Illuminate\Support\Facades\Redirect;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Gate;
 use App\Exports\UsersExport;
+use Illuminate\Support\Facades\Auth;
+use Maatwebsite\Excel\Excel as ExcelExcel;
 use Maatwebsite\Excel\Facades\Excel;
 
 class AdminOrderController extends Controller
@@ -153,7 +155,6 @@ class AdminOrderController extends Controller
         } else {
             $request->session()->flash('status-danger', 'Bạn không có quyền truy cập chức năng này');
             return json_encode('success', 200);
-
         }
     }
 
@@ -488,26 +489,29 @@ class AdminOrderController extends Controller
 
     public function listRevenue(Request $request)
     {
-        if ($request->input('month') && $request->input('year')) {
-            $month = $request->input('month') ?? '';
-            $year = $request->input('year') ?? '';
+        if ($request->input('month')) {
+            $dateMonth = $request->input('month') ?? '';
+            $dateYear = $request->input('year') ?? '';
         } else {
-            $month = date('m');
-            $year = date('Y');
+            $dateMonth = date('m');
+            $dateYear = date('Y');
         }
+
+        // dd($dateMonth);
+
         $currentDate = Carbon::now();
 
         $revenueOfDay = Order::selectRaw('DATE(created_at) as date, SUM(total) as total_price_on_day')
-            ->whereRaw('MONTH(created_at) = ?', [$month])
-            ->whereRaw('YEAR(created_at) = ?', [$year])
+            ->whereRaw('MONTH(created_at) = ?', [$dateMonth])
+            ->whereRaw('YEAR(created_at) = ?', [$dateYear])
             ->where('status', 'delivered')
             ->groupBy('date')
             ->orderBy('date', 'DESC')
             ->paginate(25);
 
         $revenueOfProduct = OrderDetail::join('orders', 'order_details.order_id', '=', 'orders.id')->selectRaw('order_details.name, sum(order_details.quantity) as quantity, SUM(order_details.price) as total, order_details.price')
-            ->whereRaw('MONTH(order_details.created_at) = ?', [$month])
-            ->whereRaw('YEAR(order_details.created_at) = ?', [$year])
+            ->whereRaw('MONTH(order_details.created_at) = ?', [$dateMonth])
+            ->whereRaw('YEAR(order_details.created_at) = ?', [$dateYear])
             ->where('orders.status', 'delivered')
             ->groupBy('name', 'price')
             ->get();
@@ -515,11 +519,12 @@ class AdminOrderController extends Controller
         $months = Order::select(DB::raw('MONTH(created_at) as month'))
             ->distinct()
             ->get();
+
         $years = Order::select(DB::raw('YEAR(created_at) as year'))
             ->distinct()
             ->get();
-        // return $months;
-        return view('admin.order.revenue', compact('revenueOfDay', 'revenueOfProduct', 'currentDate', 'months', 'years'));
+
+        return view('admin.order.revenue', compact('revenueOfDay', 'revenueOfProduct', 'currentDate', 'months', 'years', 'dateMonth', 'dateYear'));
     }
 
     public function detailProductSaleOneDate(Request $request)
@@ -551,8 +556,19 @@ class AdminOrderController extends Controller
         return json_encode($str, 200);
     }
 
-    public function excelExport() {
-        return Excel::download(new ExportFile, 'Excel.xlsx');
-    }
+    public function excelExport(Request $request)
+    {
+        $month = $request->input('month');
+        $year = $request->input('year');
 
+        $data = [
+            'month' => $month,
+            'year' => $year,
+            'username' => Auth::user()->name,
+        ];
+
+        $fileName = 'sales_' . $month . '_' . $year . '.xlsx';
+
+        return Excel::download(new ExportFile($data), $fileName);
+    }
 }

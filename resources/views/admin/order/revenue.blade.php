@@ -52,7 +52,7 @@
                                 @endforeach
                             </select>
                             {!! Form::submit('Lọc dữ liệu', ['class' => 'btn btn-primary']) !!}
-                            <a href="{{ route('order.export') }}" id="btn-export" class="ml-2 btn btn-primary"><i class="fa-solid fa-print"></i> Xuất Excel</a>
+                            <a href="{{ route('order.export') }}" url="{{ route('order.export') }}" id="btn-export" class="ml-2 btn btn-primary"><i class="fa-solid fa-print"></i> Xuất Excel</a>
                         </div>
                         <div class="btn-add--responsive">
                             <a class="btn btn-primary" href="{{ route('order.add') }}" role="button"><i
@@ -62,7 +62,7 @@
                     <div class="row">
                         <div class="col-sm-5 col-12">
                             <h6 class="text-uppercase text-dark">Doanh thu các ngày trong tháng <span
-                                    class="font-weight-bold">{{ $currentDate->format('m-Y') }}</span></h6>
+                                    class="font-weight-bold">{{ $dateMonth . '/'. $dateYear }}</span></h6>
                             <table class="table-revenue table table-striped table-responsive-sm">
                                 <thead>
                                     <tr>
@@ -100,7 +100,7 @@
                         </div>
                         <div class="col-sm-7 col-12">
                             <h6 class="text-uppercase text-dark">Chi tiết sản phẩm bán ra tháng <span
-                                    class="font-weight-bold">{{ $currentDate->format('m-Y') }}</span></h6>
+                                    class="font-weight-bold">{{ $dateMonth . '/'. $dateYear }}</span></h6>
                             <table class="table table-striped table-responsive-sm">
                                 <thead>
                                     <tr>
